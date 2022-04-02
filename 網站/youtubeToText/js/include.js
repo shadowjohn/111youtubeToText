@@ -138,21 +138,33 @@ jQuery.cookie = function (name, value, options) {
 
 //我的ajax
 function myAjax(url, postdata) {
+    $method = "POST";
+    if (postdata == "") {
+        $method = "GET";
+    }
     var tmp = $.ajax({
         url: url,
-        type: "POST",
+        type: $method,
         data: postdata,
+        dataType: 'html',
+        //crossDomain:true,
         async: false
     }).responseText;
     return tmp;
 }
 function myAjax_async(url, postdata, func) {
+    $method = "POST";
+    if (postdata == "") {
+        $method = "GET";
+    }
     $.ajax({
         url: url,
-        type: "POST",
+        type: $method,
         data: postdata,
         async: true,
+        dataType: 'html',
         success: function (html) {
+
             func(html);
         }
     });
@@ -1384,4 +1396,16 @@ function json_format(json) {
     else {
         return JSON.stringify(json, null, 2);
     }
+}
+function form_check_empty(o, fields) {
+    //fields : array  key value    
+    var ma = new Array();
+    for (var i = 0, max_i = fields.length; i < max_i; i++) {
+        if (typeof (o[fields[i]["key"]]) != "undefined") {
+            if (o[fields[i]["key"]] == "") {
+                ma.push("【" + fields[i]["value"] + "】不可為空值...");
+            }
+        }
+    }
+    return ma.join("\n");
 }

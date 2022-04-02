@@ -218,7 +218,7 @@
       <br>      
       <br>
       <center>
-        <a href="javascript:;" reqc="register_a">註冊新帳號</a>
+        <!--a href="javascript:;" reqc="register_a">註冊新帳號</a-->
         &nbsp;&nbsp;&nbsp;
         <a href="javascript:;" reqc="login_a" onClick="$('#submit_btn').trigger('click');">登入</a>
         <input type="submit" style="display:none;" id="submit_btn" value="登入">

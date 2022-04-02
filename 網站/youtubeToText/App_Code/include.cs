@@ -89,6 +89,10 @@ namespace utility
                 return htmlspecialchars_decode(ra.Rows[0]["value"].ToString());
             }
         }
+        public DataTable selectSQL_SAFE(string SQL)
+        {
+            return selectSQL_SAFE(SQL, new Dictionary<string, string>());
+        }
         public DataTable selectSQL_SAFE(string SQL, Dictionary<string, string> m)
         {
             var pa = new ArrayList();

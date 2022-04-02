@@ -70,6 +70,10 @@
     <Content Include="admin\argument.aspx" />
     <Content Include="admin\fakeCosmos.aspx" />
     <Content Include="api.aspx" />
+    <Content Include="app\linenotify_manager_add_edit.html" />
+    <Content Include="binary\ffmpeg.exe" />
+    <Content Include="binary\vosk\test_simple.py" />
+    <Content Include="binary\youtube-dl.exe" />
     <Content Include="css\reset.css" />
     <Content Include="css\style.css" />
     <Content Include="forget_pwd.aspx" />
@@ -123,6 +127,7 @@
     <Content Include="js\jquery_UI\jquery-ui-1.12.1.custom\LICENSE.txt" />
     <Content Include="js\mybox.js" />
     <Content Include="js\php.js" />
+    <Content Include="linenotify_manager.aspx" />
     <Content Include="login.aspx" />
     <Content Include="pic\brick.png" />
     <Content Include="pic\flot.png" />
@@ -197,6 +202,13 @@
     <Compile Include="index.aspx.designer.cs">
       <DependentUpon>index.aspx</DependentUpon>
     </Compile>
+    <Compile Include="linenotify_manager.aspx.cs">
+      <DependentUpon>linenotify_manager.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="linenotify_manager.aspx.designer.cs">
+      <DependentUpon>linenotify_manager.aspx</DependentUpon>
+    </Compile>
     <Compile Include="login.aspx.cs">
       <DependentUpon>login.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -236,13 +248,20 @@
     <Content Include="js\flot\PLUGINS.md" />
     <Content Include="js\flot\README.md" />
     <Content Include="js\jquery_UI\jquery-ui-1.12.1.custom\package.json" />
+    <Content Include="binary\vosk\model\disambig_tid.int" />
+    <Content Include="binary\vosk\model\final.mdl" />
+    <Content Include="binary\vosk\model\Gr.fst" />
+    <Content Include="binary\vosk\model\HCLr.fst" />
+    <Content Include="binary\vosk\model\ivector\final.dubm" />
+    <Content Include="binary\vosk\model\ivector\final.ie" />
+    <Content Include="binary\vosk\model\ivector\final.mat" />
+    <Content Include="binary\vosk\model\ivector\global_cmvn.stats" />
+    <Content Include="binary\vosk\model\ivector\online_cmvn.conf" />
+    <Content Include="binary\vosk\model\ivector\splice.conf" />
+    <Content Include="binary\vosk\model\mfcc.conf" />
+    <Content Include="binary\vosk\model\README" />
+    <Content Include="binary\vosk\model\word_boundary.int" />
     <None Include="packages.config" />
-    <None Include="Web.Debug.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
-    <None Include="Web.Release.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="js\jquery_UI\jquery-ui-1.12.1.custom\external\" />

@@ -9,16 +9,15 @@
     myinclude my = new myinclude();
 %>
 <center>
-  <h1>網站狀況偵測機</h1>
+  <h1>Youtube 直播轉文字機</h1>
 </center>
 <div class="top_class">
     <%
         if (my.isLogin())
         {
     %>
-    <a class="top_class_a_default" req="Skype機器人" href="<% my.echoBinary(my.base_url); %>/skypebot.aspx">Skype機器人</a>
-    <a class="top_class_a_default" req="網站服務偵測機" href="<% my.echoBinary(my.base_url); %>/index.aspx">網站服務偵測機</a>
-    <a class="top_class_a_default" req="主機狀況偵測機" href="<% my.echoBinary(my.base_url); %>/computers.aspx">主機狀況偵測機</a>
+    <a class="top_class_a_default" req="LineNotify維護" href="<% my.echoBinary(my.base_url); %>/linenotify_manager.aspx">LineNotify維護</a>
+    <a class="top_class_a_default" req="Youtube 直播設定" href="<% my.echoBinary(my.base_url); %>/index.aspx">Youtube 直播設定</a>    
     <%
         }
         if (my.isLogin() && my.isAdmin())

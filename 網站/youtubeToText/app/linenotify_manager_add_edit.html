@@ -1,0 +1,33 @@
+﻿<div align="center">
+    <h2>{kind_title}</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>項次</th>
+                <th>內容</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>房間名稱</th>
+                <td>
+                    <input type="text" reqc="form_title" placeholder="例如：資訊通報群組" />
+                </td>
+            </tr>
+            <tr>
+                <th>Line Token</th>
+                <td>
+                    <input type="text" reqc="form_linenotify_room_token" placeholder="例如：asdfasdfasdfasdfasdfsdfdasasdfasdf" size="50" />
+                    <br />
+                    <div align="right">
+                        <a target="_blank" href="https://notify-bot.line.me/my/">Line Notify 設定網址</a>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+    <input type="button" reqc="saveBtn" value="儲存" req_id="{id}" />
+    &nbsp;&nbsp;&nbsp;
+    <input type="button" reqc="cancelBtn" class="red" value="取消" />
+</div>
