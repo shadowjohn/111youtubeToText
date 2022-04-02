@@ -158,3 +158,11 @@ h2 {
 .fake_hdd_right_class {
     text-align: right;
 }
+
+.form_div_class textarea {
+    width: 99%;
+}
+
+.form_div_class select {
+    width: 80%;
+}

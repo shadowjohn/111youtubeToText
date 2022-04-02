@@ -1,0 +1,58 @@
+﻿<div align="center" class="form_div_class">
+    <h2>{kind_title}</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>項次</th>
+                <th>內容</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>Youtube 標題</th>
+                <td>
+                    <input type="text" reqc="form_title" placeholder="例如：三立新聞直播" />
+                </td>
+            </tr>
+            <tr>
+                <th>新聞網站位置(爬虫用，可不填)</th>
+                <td>
+                    <input type="text" reqc="form_crawler_url" placeholder="例如：https://live.setn.com/live/358" size="50" />
+                </td>
+            </tr>
+            <tr>
+                <th>Youtube URL</th>
+                <td>
+                    <input type="text" reqc="form_youtube_url" placeholder="例如：https://www.youtube.com/watch?v=CKjSm5ZeehE" size="50" />
+                </td>
+            </tr>
+            <tr>
+                <th>關鍵字</th>
+                <td>
+                    <textarea reqc="form_keyword" placeholder="戰爭,肺炎,防疫,重大災情,疫情,大雨...請用【,】分格"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>通報 LineNotify</th>
+                <td>
+                    <select reqc="form_linenotify_send_ids" multiple="multiple" size="8"></select>
+                    <br />
+                    (可按著 Ctrl 複選)
+                </td>
+            </tr>
+            <tr>
+                <th>執行狀態</th>
+                <td>
+                    <select reqc="form_status">
+                        <option value="1">執行</option>
+                        <option value="0">暫停</option>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <br />
+    <input type="button" reqc="saveBtn" value="儲存" req_id="{id}" />
+    &nbsp;&nbsp;&nbsp;
+    <input type="button" reqc="cancelBtn" class="red" value="取消" />
+</div>

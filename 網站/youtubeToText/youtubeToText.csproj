@@ -70,6 +70,7 @@
     <Content Include="admin\argument.aspx" />
     <Content Include="admin\fakeCosmos.aspx" />
     <Content Include="api.aspx" />
+    <Content Include="app\site_add_edit.html" />
     <Content Include="app\linenotify_manager_add_edit.html" />
     <Content Include="binary\ffmpeg.exe" />
     <Content Include="binary\vosk\test_simple.py" />

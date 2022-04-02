@@ -27,6 +27,28 @@
             }
             my.exit();
             break;
+        case "getLineNotifyRoomIds":
+            {
+                my.linkToDB();
+                string _SQL = @"
+                    SELECT 
+                        [id],
+                        [title]
+                    FROM
+                        [linenotify_send]
+                    WHERE
+                        1=1
+                        AND [del]='0'
+                ";
+                var _ra = my.selectSQL_SAFE(_SQL);
+                my.closeDB();
+                var OUTPUT = new Dictionary<string, object>();
+                OUTPUT["status"] = "OK";
+                OUTPUT["data"] = _ra;
+                my.echoBinary(my.json_encode(OUTPUT));
+                my.exit();
+            }
+            break;
         case "t":
             {
                 int mdt = Convert.ToInt32(Math.Floor((Convert.ToDouble(my.time()) / 60.0)));

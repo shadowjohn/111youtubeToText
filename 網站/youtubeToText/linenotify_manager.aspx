@@ -40,7 +40,7 @@
                 my.linkToDB();
                 string POSTS_STRING = "id,title,linenotify_room_token";
                 var POSTS = my.getGET_POST(POSTS_STRING, "POST");
-                if (POSTS["id"] != "")
+                if (POSTS["id"].ToString() != "")
                 {
                     POSTS["id"] = Convert.ToInt32(POSTS["id"].ToString());
                 }
@@ -78,9 +78,12 @@
                 var POSTS = my.getGET_POST(POSTS_STRING, "POST");
                 POSTS["id"] = Convert.ToInt32(POSTS["id"].ToString());
                 my.linkToDB();
+                var m = new Dictionary<string, string>();
+                m["del"] = "1";
                 var mpa = new Dictionary<string, string>();
                 mpa["id"] = POSTS["id"].ToString();
-                my.deleteSQL_SAFE("linenotify_send", "[id]=@id", mpa);
+                my.updateSQL_SAFE("site", m, "id=@id", mpa);
+                //my.deleteSQL_SAFE("linenotify_send", "[id]=@id", mpa);
                 my.closeDB();
                 var OUTPUT = new Dictionary<string, object>();
                 OUTPUT["status"] = "OK";
@@ -161,7 +164,7 @@
                             dialogMyBoxOff();
                         }
                     });
-                    $("div[id^='mybox_div'] input[reqc='saveBtn']").unbind("click").click(function () { //儲存
+                    $("div[id^='mybox_div'] input[reqc='saveBtn']").unbind("click").click(function () { //儲存(編輯)
                         var o = new Object();
                         o['id'] = $(this).attr('req_id');
                         o['title'] = $("div[id^='mybox_div'] input[reqc='form_title']").val().trim();
@@ -171,7 +174,7 @@
                             alert(message);
                             return;
                         }
-                        myAjax_async("linenotify_manager.aspx?mode=add_edit_action&domode=edit", o, function (data) {
+                        myAjax_async("?mode=add_edit_action&domode=edit", o, function (data) {
                             var jd = json_decode(data);
                             if (jd['status'] == 'OK') {
                                 smallComment("編輯完成", 3000, false, {});
@@ -220,7 +223,7 @@
                             alert(message);
                             return;
                         }
-                        myAjax_async("linenotify_manager.aspx?mode=add_edit_action&domode=add", o, function (data) {
+                        myAjax_async("?mode=add_edit_action&domode=add", o, function (data) {
                             var jd = json_decode(data);
                             if (jd['status'] == 'OK') {
                                 smallComment("新增完成", 3000, false, {});
