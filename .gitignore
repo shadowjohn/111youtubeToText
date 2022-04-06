@@ -363,3 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /網站/youtubeToText/Web.config
+/網站/youtubeToText/Web.config
+/排程/111youtubeToTextCron/App.config
+/排程/111youtubeToTextCron/binary/vosk/small_model
+/排程/111youtubeToTextCron/binary/vosk/model
