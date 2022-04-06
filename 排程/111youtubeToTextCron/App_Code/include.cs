@@ -25,6 +25,8 @@ using System.Web;
 using GFLib.Database;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Vosk;
+using _stts;
 //using System.Reflection;
 /*
 <%@ Page Language="C#" AutoEventWireup="true" CodeBehind="webservice.aspx.cs" Inherits="WaterRegion.Search.webservice.webservice"  %>
@@ -41,11 +43,16 @@ namespace utility
     {
         private Random rnd = new Random(DateTime.Now.Millisecond);
         private string connString = "";
+        Model voskModel = null;
         public myinclude()
         {
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
             connString = System.Configuration.ConfigurationManager.ConnectionStrings["DBConnection"].ConnectionString;
+            //Console.WriteLine("Model: " + pwd() + "\\binary\\vosk\\model\\");
+            Vosk.Vosk.SetLogLevel(-1);
+            voskModel = new Model("./binary/vosk/model");// pwd() + "\\binary\\vosk\\model");
+
         }
         public DataTable selectSQL_SAFE(string SQL)
         {
@@ -561,7 +568,21 @@ namespace utility
             byte[] strbig5 = System.Text.Encoding.Convert(System.Text.Encoding.Unicode, System.Text.Encoding.Default, strut8);
             return System.Text.Encoding.Default.GetString(strbig5);
         }
-
+        public string Big5toUTF8(string strInput)
+        {
+            byte[] strut8 = System.Text.Encoding.Unicode.GetBytes(strInput);
+            byte[] strbig5 = System.Text.Encoding.Convert(System.Text.Encoding.Default, System.Text.Encoding.Unicode, strut8);
+            return System.Text.Encoding.Default.GetString(strbig5);
+        }
+        public string[] stringToStringArray(string input)
+        {
+            string[] o = new string[input.Length];
+            for(int i=0,max_i=input.Length;i<max_i;i++)
+            {
+                o[i] = input.Substring(i, 1);
+            }
+            return o;
+        }
         public string dePWD_string(string input, string thekey)
         {
             input = b2s(base64_decode(input));
@@ -1886,12 +1907,51 @@ namespace utility
                 return output;
             }
         }
+        public string wavToText(string wavFile)
+        {
+            if (is_file(wavFile))
+            {
+                string data = VoskWavToText(voskModel, wavFile);
+                var jd = json_decode(data)[0];
+                return _stts.stts.stts_gb2big5(jd["text"].ToString().Replace(" ", ""));
+            }
+            return "";
+        }
+        private string VoskWavToText(Model model, string wavFile)
+        {
+            // Demo byte buffer
+            VoskRecognizer rec = new VoskRecognizer(model, 8000.0f);
+            rec.SetMaxAlternatives(0);
+            rec.SetWords(true);
+            using (Stream source = File.OpenRead(wavFile))
+            {
+                byte[] buffer = new byte[8000];
+                int bytesRead;
+                while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    if (rec.AcceptWaveform(buffer, bytesRead))
+                    {
+                        //Console.WriteLine(rec.Result());
+                    }
+                    else
+                    {
+                        //Console.WriteLine(rec.PartialResult());
+                    }
+                }
+            }
+            //Console.WriteLine(rec.FinalResult());
+            return rec.FinalResult();
+        }
         public void unlink(string filepath)
         {
-            if (is_file(filepath))
+            try
             {
-                File.Delete(filepath);
+                if (is_file(filepath))
+                {
+                    File.Delete(filepath);
+                }
             }
+            catch { }
         }
         public Dictionary<string, string> jObjectToDictionary(JObject obj)
         {

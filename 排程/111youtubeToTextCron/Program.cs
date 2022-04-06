@@ -19,7 +19,7 @@ namespace _youtubeToTextCron
         public static youtube_app yt = new youtube_app();
         public static myinclude my = new myinclude();
         public static string GLOBAL_mp4Path = "";
-        public static string GLOBAL_tmpPath = "";        
+        public static string GLOBAL_tmpPath = "";
         public static int GLOBAL_keepMp4Day = 7; //保留幾天資料
         public static string base_url = "http://localhost/youtubeToText";
         public static string base_real_url = "https://map.gis.tw/youtubeToText";
@@ -50,9 +50,12 @@ namespace _youtubeToTextCron
             }
         }
         static void Main(string[] args)
-        {            
+        {
+            //log(_stts.stts.stts_big52gb("許蓋功，你是個好人嗎?"));
+            log(my.wavToText(PWD + "\\testData\\test.wav"));
+            return;
             GLOBAL_mp4Path = my.getSystemKey("mp4Path");
-            GLOBAL_tmpPath = my.getSystemKey("tmpPath");            
+            GLOBAL_tmpPath = my.getSystemKey("tmpPath");
             GLOBAL_keepMp4Day = Convert.ToInt32(my.getSystemKey("keepMp4Day"));
 
             if (!my.is_dir(GLOBAL_tmpPath))

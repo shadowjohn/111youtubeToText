@@ -699,61 +699,44 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
             {
                 tsFiles[i] = WORKING_PATH + "\\" + tsFiles[i]; //full path
                 string OUTPUT_MP4_FILENAME = t + ".mp4"; //timestamp 輸出的 mp4 檔名
+                string OUTPUT_WAV = t + ".wav"; //timestamp 輸出的 wav 檔名
                 string OUTPUT_JSON_FILENAME = t + ".txt"; //timestamp 輸出 mp4 的 infomation
                 string OUTPUT_PNG_FILENAME = t + ".png"; //timestamp 輸出的 mp4 第一張影格的圖片
                 //-vcodec copy 
                 //-vf scale=-2:480
-                string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i " + tsFiles[i] + " -vcodec copy \"" + OUTPUT_MP4_FILENAME + "\" && exit";
+                //string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + tsFiles[i] + "\" -vcodec copy \"" + OUTPUT_MP4_FILENAME + "\" && exit";
+                string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + tsFiles[i] + "\" -ac 1 -ar 16000 \"" + OUTPUT_WAV + "\" && exit";
+                Program.log(CMD);
                 Program.my.system_background(CMD, 0);
 
                 //如果有產出 OUTPUT_MP4_FILENAME，就刪除用掉的 tsFiles，並寫入 DB
                 //連 ts 的 txt 也刪
-                if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_MP4_FILENAME))
+                if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_WAV))
                 {
 
-                    string mn = Program.my.mainname(OUTPUT_MP4_FILENAME);
+                    string mn = Program.my.mainname(OUTPUT_WAV);
                     string d_txt_file = WORKING_PATH + "\\" + mn + ".txt";
                     string d_ts_file = WORKING_PATH + "\\" + mn + ".ts";
-                    string d_mp4_file = WORKING_PATH + "\\" + mn + ".mp4";
 
                     if (Program.my.is_file(d_txt_file)) //刪 durion .txt 
                     {
-                        try
-                        {
-                            Program.my.unlink(d_txt_file);
-                        }
-                        catch //(Exception ex)
-                        {
-                            //Program.logError("無法刪除 d_txt_file ... : " + d_txt_file + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
-                        }
-                    }
-                    if (Program.my.is_file(d_ts_file)) //刪 ts 檔 .ts
-                    {
-                        try
-                        {
-                            Program.my.unlink(d_ts_file);
-                        }
-                        catch //(Exception ex)
-                        {
-                            //Program.logError("無法刪除 d_ts_file ... : " + d_ts_file + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
-                        }
-                    }
-                    if (Program.my.is_file(d_mp4_file)) //刪 mp4 檔 .mp4
-                    {
-                        try
-                        {
-                            Program.my.unlink(d_mp4_file);
-                        }
-                        catch //(Exception ex)
-                        {
-                            //Program.logError("無法刪除 d_mp4_file ... : " + d_mp4_file + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
-                        }
-                    }
+                        Program.my.unlink(d_txt_file);
 
-                    //取得mp4的影片during播放時間，然後寫入 DB
+                    }
+                    //這時不能刪 ts 檔
+                    //if (Program.my.is_file(d_ts_file)) //刪 ts 檔 .ts
+                    //{
+                        //Program.my.unlink(d_ts_file);
+                    //}
+
+
+                    //取得 ts 的影片during播放時間，然後寫入 DB
                     // $CMD = "/usr/bin/ffprobe -v quiet -show_streams -select_streams v:0 -of json {$OUTPUT_FILENAME_MP4} > 倒出 txt 檔"; 
-                    CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFPROBE_BIN + "\" -v quiet -show_streams -select_streams v:0 -of json \"" + OUTPUT_MP4_FILENAME + "\" > \"" + OUTPUT_JSON_FILENAME + "\" && exit";
+                    CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFPROBE_BIN + "\" -v quiet -show_streams -select_streams v:0 -of json \"" + d_ts_file + "\" > \"" + OUTPUT_JSON_FILENAME + "\" && exit";
                     Program.my.system_background(CMD, 0);
+
+                    //在此語音轉文字
+                    string txt = Program.my.wavToText(OUTPUT_WAV);
 
                     //針對第一個影格作縮圖 (先不要)                
                     //CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + OUTPUT_MP4_FILENAME + "\"  -f image2 -ss 1 -vframes 1 -s 853x480 -an \"" + OUTPUT_PNG_FILENAME + "\" && exit";
@@ -819,10 +802,10 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                     */
                     //如果有 txt 檔，格式長這樣，要抓 duration，然後寫回「YOUTUBE_RECORD_MP4」
 
-                    if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME) && Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_MP4_FILENAME))
+                    if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME) && Program.my.is_file(WORKING_PATH + "\\" + d_ts_file))
                     {
                         string Ymd = Program.my.date("Y-m-d", Program.my.strtotime(Y + "-" + md.Substring(0, 2) + "-" + md.Substring(2, 2)));
-                        long MP4_FILESIZE = Program.my.filesize(WORKING_PATH + "\\" + OUTPUT_MP4_FILENAME);
+                        long MP4_FILESIZE = Program.my.filesize(WORKING_PATH + "\\" + d_ts_file);
                         string data = Program.my.b2s(Program.my.file_get_contents(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME));
                         var jd = Program.my.json_decode(data);
                         string DURATION = jd[0]["streams"][0]["duration"].ToString();
@@ -832,7 +815,7 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                         pa["DATE"] = Ymd;
                         pa["DURATION"] = DURATION;
                         pa["MP4_FILENAME"] = OUTPUT_MP4_FILENAME;
-                        pa["MP4_FILESIZE"] = MP4_FILESIZE.ToString();
+                        pa["MP4_FILESIZE"] = d_ts_file.ToString();
                         pa["CREATE_DATETIME"] = Ymd;
                         Program.my.insertSQL("site_item", pa);
 
