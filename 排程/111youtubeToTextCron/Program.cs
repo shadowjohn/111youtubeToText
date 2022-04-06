@@ -52,8 +52,8 @@ namespace _youtubeToTextCron
         static void Main(string[] args)
         {
             //log(_stts.stts.stts_big52gb("許蓋功，你是個好人嗎?"));
-            log(my.wavToText(PWD + "\\testData\\test.wav"));
-            return;
+            //log(my.wavToText(PWD + "\\testData\\test.wav"));
+            //return;
             GLOBAL_mp4Path = my.getSystemKey("mp4Path");
             GLOBAL_tmpPath = my.getSystemKey("tmpPath");
             GLOBAL_keepMp4Day = Convert.ToInt32(my.getSystemKey("keepMp4Day"));
@@ -99,13 +99,13 @@ namespace _youtubeToTextCron
             Thread.Sleep(3 * 1000); //休息3秒
 
             //每40秒檢查資料夾有多少個 ts 檔，超過 howManyTsMerge 個 ts 檔就作合併的工作
-            threads["MAIN_YT_RUN_40_SEC"] = new Thread(() => yt.run_40sec());
-            threads["MAIN_YT_RUN_40_SEC"].Start();
-            Thread.Sleep(3 * 1000); //休息3秒
+            //threads["MAIN_YT_RUN_40_SEC"] = new Thread(() => yt.run_40sec());
+            //threads["MAIN_YT_RUN_40_SEC"].Start();
+            //Thread.Sleep(3 * 1000); //休息3秒
 
             //每六小時，刪除超過七天的 MP4
             threads["MAIN_YT_RUN_6_HOUR"] = new Thread(() => yt.run_6hour());
-            threads["MAIN_YT_RUN_6_HOUR"].Start();
+            //threads["MAIN_YT_RUN_6_HOUR"].Start();
             while (true)
             {
                 //lock process

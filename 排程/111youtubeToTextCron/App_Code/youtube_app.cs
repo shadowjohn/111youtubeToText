@@ -403,14 +403,14 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                     string md = Program.my.date("md", Program.my.strtotime(m3[i]["DATE"]));
                     string OUTPUT_PATH = Program.GLOBAL_mp4Path + "\\" + site_id + "\\" + Y + "\\" + md;
                     string OUTPUT_FILENAME = m3[i]["TS_MD5"] + ".ts";//md5 + .ts
-                    string OUTPUT_MP4_FILENAME = m3[i]["TS_MD5"] + ".mp4";//md5 + .mp4
+                    //string OUTPUT_MP4_FILENAME = m3[i]["TS_MD5"] + ".mp4";//md5 + .mp4
                     string DOWNLOAD_PATH = m3[i]["TS_PATH"]; //要下載的來源
                     string DURATION = m3[i]["DURATION"];
                     string START_DT = m3[i]["START_DT"];
                     string DATE = Program.my.date("Y-m-d", Program.my.strtotime(m3[i]["DATE"]));
                     string op = OUTPUT_PATH + "\\" + OUTPUT_FILENAME;
-                    string op_mp4 = OUTPUT_PATH + "\\" + OUTPUT_MP4_FILENAME;
-                    string op_duration_txt = OUTPUT_PATH + "\\" + m3[i]["TS_MD5"] + ".txt"; //只紀錄 DURATION
+                    //string op_mp4 = OUTPUT_PATH + "\\" + OUTPUT_MP4_FILENAME;
+
                     if (!Program.my.is_dir(OUTPUT_PATH))
                     {
                         Program.my.mkdir(OUTPUT_PATH);
@@ -420,32 +420,161 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                         continue;
                     }
                     //不存在才要下載
-                    string CMD = Program.PWD + "\\binary\\wget.exe \"" + DOWNLOAD_PATH + "\" --timeout=20 -t 2 -c -O \"" + op + "\" && exit";
+                    //string CMD = Program.PWD + "\\binary\\wget.exe \"" + DOWNLOAD_PATH + "\" --timeout=20 -t 2 -c -O \"" + op + "\" && exit";
                     //抓吧
-                    Program.log(CMD);
-                    Program.my.system_background(CMD, 0);
-                    //然後把 DURATION 也寫出
-                    Program.my.file_put_contents(op_duration_txt, DURATION);
+                    //Program.log(CMD);
+                    //Program.my.system_background(CMD, 0);
+                    //下載 ts
+                    byte[] tsFile_ByteArray = Program.my.file_get_contents(DOWNLOAD_PATH);
+                    Program.my.file_put_contents(op, tsFile_ByteArray);
+                    Array.Clear(tsFile_ByteArray, 0, tsFile_ByteArray.Length);
+                    tsFile_ByteArray = null;
+
+                    //////////////////////////////////////////////////////////////////////////////////////// 轉 wav
+                    string FFMPEG_BIN = Program.PWD + "\\binary\\ffmpeg.exe";
+                    string FFPROBE_BIN = Program.PWD + "\\binary\\ffprobe.exe";
                     if (Program.my.is_file(op))
                     {
+                        string WORKING_PATH = Program.GLOBAL_mp4Path + "\\" + site_id + "\\" + Y + "\\" + md;
+                        //tsFiles[i] = WORKING_PATH + "\\" + tsFiles[i]; //full path
+                        string t = Program.my.time();
+                        //string OUTPUT_MP4_FILENAME = t + ".mp4"; //timestamp 輸出的 mp4 檔名
+                        string OUTPUT_TS_FILENAME = t + ".ts";
+                        string OUTPUT_WAV = t + ".wav"; //timestamp 輸出的 wav 檔名                        
+                        string OUTPUT_DURATION_TXT = t + ".txt"; //只紀錄 DURATION                                        //rename ts
+                        Program.my.rename(op, WORKING_PATH + "\\" + OUTPUT_TS_FILENAME);
+                        //-vcodec copy 
+                        //-vf scale=-2:480
+                        //string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + tsFiles[i] + "\" -vcodec copy \"" + OUTPUT_MP4_FILENAME + "\" && exit";
+                        string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + OUTPUT_TS_FILENAME + "\" -ac 1 -ar 8000 \"" + OUTPUT_WAV + "\" && exit";
+                        //Program.log(CMD);
+                        Program.my.system_background(CMD, 0);
 
-                        //轉 mp4 
-                        //2021-09-11 這裡不轉，太花 cpu ram
-                        //CMD = Program.PWD + "\\binary\\ffmpeg.exe -y -i \"" + op + "\" -timeout 30 \"" + op_mp4 + "\"  && exit";
-                        //Program.my.system_background(CMD, 0);
-                        //抓成功了，寫 DB
-                        //寫入 site_item
-                        var pa = new Dictionary<string, string>();
-                        pa["site_id"] = site_id;
-                        pa["START_DT"] = START_DT;
-                        pa["DURATION"] = DURATION;
-                        pa["FILENAME"] = OUTPUT_FILENAME;
-                        pa["DATE"] = DATE;
-                        pa["IS_MERGE"] = "0";
-                        pa["FILESIZE"] = Program.my.filesize(op).ToString();
-                        pa["TS_DOWNLOAD_URL"] = DOWNLOAD_PATH;
-                        Program.my.insertSQL("site_item", pa);
+                        //在此語音轉文字
+                        string txt = Program.my.wavToText(WORKING_PATH + "\\" + OUTPUT_WAV);
+                        Program.log("\r\n文字：" + txt);
+
+                        //如果有產出 OUTPUT_MP4_FILENAME，就刪除用掉的 tsFiles，並寫入 DB
+                        //連 ts 的 txt 也刪
+                        if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_WAV))
+                        {
+
+                            //string mn = Program.my.mainname(OUTPUT_WAV);
+                            //string d_txt_file = WORKING_PATH + "\\" + mn + ".txt";
+                            //string d_ts_file = WORKING_PATH + "\\" + mn + ".ts";
+
+
+                            if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_DURATION_TXT)) //刪 durion .txt 
+                            {
+                                Program.my.unlink(WORKING_PATH + "\\" + OUTPUT_DURATION_TXT);
+
+                            }
+                            //這時不能刪 ts 檔
+                            //if (Program.my.is_file(d_ts_file)) //刪 ts 檔 .ts
+                            //{
+                            //Program.my.unlink(d_ts_file);
+                            //}
+
+
+                            //取得 ts 的影片during播放時間，然後寫入 DB
+                            // $CMD = "/usr/bin/ffprobe -v quiet -show_streams -select_streams v:0 -of json {$OUTPUT_FILENAME_MP4} > 倒出 txt 檔"; 
+                            CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFPROBE_BIN + "\" -v quiet -show_streams -select_streams v:0 -of json \"" + OUTPUT_TS_FILENAME + "\" > \"" + OUTPUT_DURATION_TXT + "\" && exit";
+                            Program.my.system_background(CMD, 0);
+
+
+                            //針對第一個影格作縮圖 (先不要)                
+                            //CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + OUTPUT_MP4_FILENAME + "\"  -f image2 -ss 1 -vframes 1 -s 853x480 -an \"" + OUTPUT_PNG_FILENAME + "\" && exit";
+                            //Program.my.system_background(CMD, 0);
+                            /*
+                             * {
+                "streams": [
+                    {
+                        "index": 0,
+                        "codec_name": "h264",
+                        "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+                        "profile": "High",
+                        "codec_type": "video",
+                        "codec_time_base": "1/36",
+                        "codec_tag_string": "avc1",
+                        "codec_tag": "0x31637661",
+                        "width": 640,
+                        "height": 480,
+                        "coded_width": 640,
+                        "coded_height": 480,
+                        "has_b_frames": 2,
+                        "sample_aspect_ratio": "1:1",
+                        "display_aspect_ratio": "4:3",
+                        "pix_fmt": "yuvj420p",
+                        "level": 30,
+                        "color_range": "pc",
+                        "chroma_location": "left",
+                        "refs": 1,
+                        "is_avc": "true",
+                        "nal_length_size": "4",
+                        "r_frame_rate": "18/1",
+                        "avg_frame_rate": "18/1",
+                        "time_base": "1/18432",
+                        "start_pts": 0,
+                        "start_time": "0.000000",
+                        "duration_ts": 9264144,
+                        "duration": "502.611979",
+                        "bit_rate": "70218",
+                        "bits_per_raw_sample": "8",
+                        "nb_frames": "9047",
+                        "disposition": {
+                            "default": 1,
+                            "dub": 0,
+                            "original": 0,
+                            "comment": 0,
+                            "lyrics": 0,
+                            "karaoke": 0,
+                            "forced": 0,
+                            "hearing_impaired": 0,
+                            "visual_impaired": 0,
+                            "clean_effects": 0,
+                            "attached_pic": 0,
+                            "timed_thumbnails": 0
+                        },
+                        "tags": {
+                            "language": "und",
+                            "handler_name": "VideoHandler"
+                        }
                     }
+                ]
+            }
+
+                            */
+                            //如果有 txt 檔，格式長這樣，要抓 duration，然後寫回「YOUTUBE_RECORD_MP4」
+
+                            if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_DURATION_TXT) &&
+                                Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_WAV) &&
+                                Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_TS_FILENAME)
+                                )
+                            {
+                                string Ymd = Program.my.date("Y-m-d", Program.my.strtotime(Y + "-" + md.Substring(0, 2) + "-" + md.Substring(2, 2)));
+                                long TS_FILESIZE = Program.my.filesize(WORKING_PATH + "\\" + OUTPUT_TS_FILENAME);
+
+
+                                var pa = new Dictionary<string, string>();
+                                pa["site_id"] = site_id;
+                                pa["TS_DOWNLOAD_URL"] = DOWNLOAD_PATH;
+                                pa["DATE"] = Ymd;
+                                pa["START_DT"] = Program.my.date("Y-m-d H:i:s.fff", START_DT);
+                                pa["DURATION"] = DURATION;
+                                pa["TS_FILENAME"] = OUTPUT_TS_FILENAME;
+                                pa["TS_FILESIZE"] = TS_FILESIZE.ToString();
+                                pa["CREATE_DATETIME"] = Program.my.date("Y-m-d H:i:s");
+                                pa["contents"] = txt;
+                                Program.log(Program.my.json_format_utf8(Program.my.json_encode(pa)));
+                                Program.my.insertSQL("site_item", pa);
+                            }
+                        }
+
+                        //然後把 DURATION 也寫出
+                        Program.my.file_put_contents(OUTPUT_DURATION_TXT, DURATION);
+                    }
+
+
                 }
                 catch
                 {
@@ -469,6 +598,10 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                 {
                     return;
                 }
+
+                Program.killMoreThan120minProcess();
+
+
                 if (lastMinute == "")
                 {
                     lastMinute = Program.my.date("i");
@@ -656,7 +789,7 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                                 //開始轉檔
                                 //MessageBox.Show(Program.my.json_encode(f));
                                 //丟thread轉好了
-                                new Thread(() => ts_to_mp4(site_id, Y, md, f)).Start();
+                                new Thread(() => ts_to_wav(site_id, Y, md, new List<string>(f))).Start();
                             }
                         }
                         catch (Exception ex)
@@ -682,8 +815,9 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                 Program.threads["MAIN_YT_RUN_40_SEC"].Start();
             }
         }
-        private void ts_to_mp4(string site_id, string Y, string md, List<string> tsFiles)
+        private void ts_to_wav(string site_id, string Y, string md, List<string> tsFiles)
         {
+            return;
             //轉檔的語法在這：
             //https://superuser.com/questions/692990/use-ffmpeg-copy-codec-to-combine-ts-files-into-a-single-mp4
             //copy /b segment1_0_av.ts+segment2_0_av.ts+segment3_0_av.ts all.ts
@@ -691,52 +825,60 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
             //工作目錄            
             string WORKING_PATH = Program.GLOBAL_mp4Path + "\\" + site_id + "\\" + Y + "\\" + md;
             //輸出 mp4 的檔名
-            string t = Program.my.time();
+
 
             string FFMPEG_BIN = Program.PWD + "\\binary\\ffmpeg.exe";
             string FFPROBE_BIN = Program.PWD + "\\binary\\ffprobe.exe";
             for (int i = 0, max_i = tsFiles.Count(); i < max_i; i++)
             {
-                tsFiles[i] = WORKING_PATH + "\\" + tsFiles[i]; //full path
-                string OUTPUT_MP4_FILENAME = t + ".mp4"; //timestamp 輸出的 mp4 檔名
+                //tsFiles[i] = WORKING_PATH + "\\" + tsFiles[i]; //full path
+                string t = Program.my.time();
+                //string OUTPUT_MP4_FILENAME = t + ".mp4"; //timestamp 輸出的 mp4 檔名
+                string OUTPUT_TS_FILENAME = t + ".ts";
                 string OUTPUT_WAV = t + ".wav"; //timestamp 輸出的 wav 檔名
                 string OUTPUT_JSON_FILENAME = t + ".txt"; //timestamp 輸出 mp4 的 infomation
-                string OUTPUT_PNG_FILENAME = t + ".png"; //timestamp 輸出的 mp4 第一張影格的圖片
+                //string OUTPUT_PNG_FILENAME = t + ".png"; //timestamp 輸出的 mp4 第一張影格的圖片
+
+                //rename ts
+                Program.my.rename(tsFiles[i], WORKING_PATH + "\\" + OUTPUT_TS_FILENAME);
                 //-vcodec copy 
                 //-vf scale=-2:480
                 //string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + tsFiles[i] + "\" -vcodec copy \"" + OUTPUT_MP4_FILENAME + "\" && exit";
-                string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + tsFiles[i] + "\" -ac 1 -ar 16000 \"" + OUTPUT_WAV + "\" && exit";
-                Program.log(CMD);
+                string CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + OUTPUT_TS_FILENAME + "\" -ac 1 -ar 8000 \"" + OUTPUT_WAV + "\" && exit";
+                //Program.log(CMD);
                 Program.my.system_background(CMD, 0);
+
+                //在此語音轉文字
+                string txt = Program.my.wavToText(WORKING_PATH + "\\" + OUTPUT_WAV);
+                Program.log("\r\n文字：" + txt);
 
                 //如果有產出 OUTPUT_MP4_FILENAME，就刪除用掉的 tsFiles，並寫入 DB
                 //連 ts 的 txt 也刪
                 if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_WAV))
                 {
 
-                    string mn = Program.my.mainname(OUTPUT_WAV);
-                    string d_txt_file = WORKING_PATH + "\\" + mn + ".txt";
-                    string d_ts_file = WORKING_PATH + "\\" + mn + ".ts";
+                    //string mn = Program.my.mainname(OUTPUT_WAV);
+                    //string d_txt_file = WORKING_PATH + "\\" + mn + ".txt";
+                    //string d_ts_file = WORKING_PATH + "\\" + mn + ".ts";
 
-                    if (Program.my.is_file(d_txt_file)) //刪 durion .txt 
+
+                    if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME)) //刪 durion .txt 
                     {
-                        Program.my.unlink(d_txt_file);
+                        Program.my.unlink(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME);
 
                     }
                     //這時不能刪 ts 檔
                     //if (Program.my.is_file(d_ts_file)) //刪 ts 檔 .ts
                     //{
-                        //Program.my.unlink(d_ts_file);
+                    //Program.my.unlink(d_ts_file);
                     //}
 
 
                     //取得 ts 的影片during播放時間，然後寫入 DB
                     // $CMD = "/usr/bin/ffprobe -v quiet -show_streams -select_streams v:0 -of json {$OUTPUT_FILENAME_MP4} > 倒出 txt 檔"; 
-                    CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFPROBE_BIN + "\" -v quiet -show_streams -select_streams v:0 -of json \"" + d_ts_file + "\" > \"" + OUTPUT_JSON_FILENAME + "\" && exit";
+                    CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFPROBE_BIN + "\" -v quiet -show_streams -select_streams v:0 -of json \"" + OUTPUT_TS_FILENAME + "\" > \"" + OUTPUT_JSON_FILENAME + "\" && exit";
                     Program.my.system_background(CMD, 0);
 
-                    //在此語音轉文字
-                    string txt = Program.my.wavToText(OUTPUT_WAV);
 
                     //針對第一個影格作縮圖 (先不要)                
                     //CMD = "cd /d \"" + WORKING_PATH + "\" && \"" + FFMPEG_BIN + "\" -y -i \"" + OUTPUT_MP4_FILENAME + "\"  -f image2 -ss 1 -vframes 1 -s 853x480 -an \"" + OUTPUT_PNG_FILENAME + "\" && exit";
@@ -802,10 +944,13 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                     */
                     //如果有 txt 檔，格式長這樣，要抓 duration，然後寫回「YOUTUBE_RECORD_MP4」
 
-                    if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME) && Program.my.is_file(WORKING_PATH + "\\" + d_ts_file))
+                    if (Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME) &&
+                        Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_WAV) &&
+                        Program.my.is_file(WORKING_PATH + "\\" + OUTPUT_TS_FILENAME)
+                        )
                     {
                         string Ymd = Program.my.date("Y-m-d", Program.my.strtotime(Y + "-" + md.Substring(0, 2) + "-" + md.Substring(2, 2)));
-                        long MP4_FILESIZE = Program.my.filesize(WORKING_PATH + "\\" + d_ts_file);
+                        long TS_FILESIZE = Program.my.filesize(WORKING_PATH + "\\" + OUTPUT_TS_FILENAME);
                         string data = Program.my.b2s(Program.my.file_get_contents(WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME));
                         var jd = Program.my.json_decode(data);
                         string DURATION = jd[0]["streams"][0]["duration"].ToString();
@@ -814,20 +959,22 @@ https://r2---sn-ipoxu-umb6.googlevideo.com/videoplayback/id/tWdI0YfY93Y.1/itag/9
                         pa["site_id"] = site_id;
                         pa["DATE"] = Ymd;
                         pa["DURATION"] = DURATION;
-                        pa["MP4_FILENAME"] = OUTPUT_MP4_FILENAME;
-                        pa["MP4_FILESIZE"] = d_ts_file.ToString();
-                        pa["CREATE_DATETIME"] = Ymd;
+                        pa["TS_FILENAME"] = OUTPUT_TS_FILENAME;
+                        pa["TS_FILESIZE"] = TS_FILESIZE.ToString();
+                        pa["CREATE_DATETIME"] = Program.my.date("Y-m-d H:i:s");
+                        //pa["START_DT"] = start
+                        pa["contents"] = txt;
                         Program.my.insertSQL("site_item", pa);
 
                     }
                     else
                     {
-                        Program.logError("無法產出 MP4... : site_id : " + site_id + "\r\n找不到 JSON、MP4\r\nJSON :" + WORKING_PATH + "\\" + OUTPUT_JSON_FILENAME + "\r\nPNG : " + WORKING_PATH + "\\" + OUTPUT_MP4_FILENAME);
+                        Program.logError("無法產出 TS、WAV... : site_id : " + site_id + "\r\n找不到 TS、WAV\r\nTS :" + WORKING_PATH + "\\" + OUTPUT_TS_FILENAME + "\r\nWAV : " + WORKING_PATH + "\\" + OUTPUT_WAV);
                     }
                 }
                 else
                 {
-                    Program.logError("無法產出 MP4... : site_id : " + site_id + "\r\nCMD : " + CMD);
+                    Program.logError("無法產出 WAV... : site_id : " + site_id + "\r\nCMD : " + CMD);
                 }
             }
         }

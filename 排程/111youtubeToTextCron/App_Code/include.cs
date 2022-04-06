@@ -1942,6 +1942,14 @@ namespace utility
             //Console.WriteLine(rec.FinalResult());
             return rec.FinalResult();
         }
+        public void rename(string sourceFile, string destFile)
+        {
+            //try
+            //{
+                System.IO.File.Move(sourceFile, destFile);
+            //}
+            //catch { }
+        }
         public void unlink(string filepath)
         {
             try
